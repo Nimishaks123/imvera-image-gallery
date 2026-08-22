@@ -1,3 +1,4 @@
+import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import { ImageCard } from "./ImageCard.tsx";
 import type { Image } from "../../types/image.ts";
 
@@ -17,17 +18,19 @@ export function ImageGrid({
   onDelete,
 }: ImageGridProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {images.map((image) => (
-        <ImageCard
-          key={image.id}
-          image={image}
-          isSelected={selectedIds.has(image.id)}
-          onSelect={onSelect}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
-      ))}
-    </div>
+    <SortableContext items={images.map((img) => img.id)} strategy={rectSortingStrategy}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {images.map((image) => (
+          <ImageCard
+            key={image.id}
+            image={image}
+            isSelected={selectedIds.has(image.id)}
+            onSelect={onSelect}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        ))}
+      </div>
+    </SortableContext>
   );
 }

@@ -12,6 +12,8 @@ export class UserRepository implements IUserRepository {
       email: doc.email,
       phone: doc.phone,
       password: doc.password,
+      passwordResetToken: doc.passwordResetToken,
+      passwordResetExpires: doc.passwordResetExpires,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     };
@@ -32,7 +34,7 @@ export class UserRepository implements IUserRepository {
     return doc ? this.toEntity(doc as UserDocument) : null;
   }
 
-  async create(data: Omit<User, "id" | "createdAt" | "updatedAt">): Promise<User> {
+  async create(data: Omit<User, "id" | "createdAt" | "updatedAt" | "passwordResetToken" | "passwordResetExpires">): Promise<User> {
     try {
       const doc = await UserModel.create(data);
       return this.toEntity(doc as UserDocument);
@@ -47,5 +49,32 @@ export class UserRepository implements IUserRepository {
       }
       throw err;
     }
+  }
+
+  async update(user: User): Promise<User> {
+    const doc = await UserModel.findByIdAndUpdate(
+      user.id,
+      {
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        password: user.password,
+        passwordResetToken: user.passwordResetToken,
+        passwordResetExpires: user.passwordResetExpires,
+      },
+      { new: true },
+    ).exec();
+    if (!doc) {
+      throw new AppError("User not found", StatusCodes.NOT_FOUND);
+    }
+    return this.toEntity(doc as UserDocument);
+  }
+
+  async findByResetToken(token: string): Promise<User | null> {
+    const doc = await UserModel.findOne({
+      passwordResetToken: token,
+      passwordResetExpires: { $gt: new Date() },
+    }).exec();
+    return doc ? this.toEntity(doc as UserDocument) : null;
   }
 }

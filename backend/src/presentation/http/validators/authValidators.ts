@@ -87,3 +87,53 @@ export function validateLoginInput(
 
   next();
 }
+
+export function validateForgotPasswordInput(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): void {
+  const body = req.body as Record<string, unknown>;
+  const { email } = body;
+
+  if (!email || typeof email !== "string" || email.trim().length === 0) {
+    next(new AppError("Email is required", StatusCodes.BAD_REQUEST));
+    return;
+  }
+  if (!isValidEmail(email.trim())) {
+    next(new AppError("Invalid email format", StatusCodes.BAD_REQUEST));
+    return;
+  }
+
+  next();
+}
+
+export function validateResetPasswordInput(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): void {
+  const body = req.body as Record<string, unknown>;
+  const { token, password } = body;
+
+  if (!token || typeof token !== "string" || token.trim().length === 0) {
+    next(new AppError("Token is required", StatusCodes.BAD_REQUEST));
+    return;
+  }
+
+  if (!password || typeof password !== "string") {
+    next(new AppError("Password is required", StatusCodes.BAD_REQUEST));
+    return;
+  }
+  if (!isStrongPassword(password)) {
+    next(
+      new AppError(
+        "Password must be at least 8 characters and contain at least one letter and one number",
+        StatusCodes.BAD_REQUEST,
+      ),
+    );
+    return;
+  }
+
+  next();
+}

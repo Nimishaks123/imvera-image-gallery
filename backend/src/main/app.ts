@@ -12,9 +12,10 @@ import { StatusCodes } from "../common/constants/statusCodes.js";
 
 interface AppRouters {
   authRouter: Router;
+  imageRouter: Router;
 }
 
-export function createApp({ authRouter }: AppRouters): Express {
+export function createApp({ authRouter, imageRouter }: AppRouters): Express {
   const app = express();
 
   app.use(cors({ origin: env.clientUrl, credentials: true }));
@@ -25,6 +26,7 @@ export function createApp({ authRouter }: AppRouters): Express {
   });
 
   app.use("/api/auth", authRouter);
+  app.use("/api/images", imageRouter);
 
   app.use((_req: Request, _res: Response, next: NextFunction) => {
     next(new AppError("Route not found", StatusCodes.NOT_FOUND));

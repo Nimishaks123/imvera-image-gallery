@@ -24,6 +24,7 @@ export const env = {
     host: process.env["SMTP_HOST"] ?? "",
     port: parseInt(process.env["SMTP_PORT"] ?? "587", 10),
     user: process.env["SMTP_USER"] ?? "",
-    pass: process.env["SMTP_PASS"] ?? "",
+    password: process.env["SMTP_PASSWORD"] ?? "",
+    from: process.env["SMTP_FROM"] ?? "",
   },
 } as const;

@@ -6,6 +6,8 @@ export interface IUserFields {
   email: string;
   phone: string;
   password: string;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
 }
 
 export type UserDocument = HydratedDocument<IUserFields> & {
@@ -19,6 +21,8 @@ const userSchema = new mongoose.Schema<IUserFields>(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     phone: { type: String, required: true, unique: true, trim: true },
     password: { type: String, required: true },
+    passwordResetToken: { type: String, sparse: true },
+    passwordResetExpires: { type: Date },
   },
   { timestamps: true },
 );

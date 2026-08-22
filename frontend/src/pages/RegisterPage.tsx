@@ -25,7 +25,7 @@ export function RegisterPage() {
 
   useEffect(() => {
     clearError();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   async function onSubmit(data: RegisterFormValues) {
     const result = await dispatch(
@@ -70,7 +70,7 @@ export function RegisterPage() {
           label="Phone number"
           type="tel"
           autoComplete="tel"
-          placeholder="+1 555 000 0000"
+          placeholder="+91 555 000 0000"
           error={errors.phone?.message}
           {...register("phone")}
         />

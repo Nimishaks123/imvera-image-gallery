@@ -4,6 +4,8 @@ import { useAppSelector } from "../store/store.ts";
 import { ProtectedRoute } from "./ProtectedRoute.tsx";
 import { LoginPage } from "../pages/LoginPage.tsx";
 import { RegisterPage } from "../pages/RegisterPage.tsx";
+import { ForgotPasswordPage } from "../pages/ForgotPasswordPage.tsx";
+import { ResetPasswordPage } from "../pages/ResetPasswordPage.tsx";
 import { GalleryPage } from "../pages/GalleryPage.tsx";
 import { Spinner } from "../components/common/Spinner.tsx";
 
@@ -12,7 +14,7 @@ function PublicRoute({ children }: { children: ReactNode }) {
 
   if (!initializationDone) {
     return (
-      <div className="loading-screen">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <Spinner size="lg" />
       </div>
     );
@@ -41,6 +43,22 @@ export function AppRouter() {
         element={
           <PublicRoute>
             <RegisterPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/forgot-password"
+        element={
+          <PublicRoute>
+            <ForgotPasswordPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/reset-password"
+        element={
+          <PublicRoute>
+            <ResetPasswordPage />
           </PublicRoute>
         }
       />

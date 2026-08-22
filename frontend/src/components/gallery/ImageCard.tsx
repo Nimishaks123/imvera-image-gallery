@@ -1,3 +1,5 @@
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import type { Image } from "../../types/image.ts";
 
 interface ImageCardProps {
@@ -6,18 +8,6 @@ interface ImageCardProps {
   onSelect?: (id: string, checked: boolean) => void;
   onEdit?: (image: Image) => void;
   onDelete?: (image: Image) => void;
-  // Drag-and-drop placeholder props for future reorder wiring
-  isDragging?: boolean;
-  dragListeners?: Record<string, unknown>;
-  dragAttributes?: Record<string, unknown>;
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 Bytes";
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
 }
 
 export function ImageCard({
@@ -26,16 +16,29 @@ export function ImageCard({
   onSelect,
   onEdit,
   onDelete,
-  isDragging = false,
-  dragListeners,
-  dragAttributes,
 }: ImageCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: image.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
   return (
     <div
+      ref={setNodeRef}
+      style={style}
       className={[
         "bg-white border rounded-lg overflow-hidden flex flex-col group relative transition-all duration-150 shadow-sm hover:shadow-md",
         isSelected ? "border-blue-500 ring-1 ring-blue-500/50" : "border-slate-200",
-        isDragging ? "opacity-40" : "",
+        isDragging ? "opacity-30 z-20 scale-[1.01]" : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -51,10 +54,10 @@ export function ImageCard({
         />
       </div>
 
-      {/* Drag handle placeholder (Grabber icon) */}
+      {/* Drag handle grabber icon */}
       <div
-        {...dragAttributes}
-        {...dragListeners}
+        {...attributes}
+        {...listeners}
         className="absolute top-3 right-3 z-10 p-1.5 rounded bg-white/90 border border-slate-200 text-slate-400 hover:text-slate-600 shadow-sm cursor-grab active:cursor-grabbing hover:bg-slate-50 transition-all opacity-0 group-hover:opacity-100 focus-within:opacity-100"
         title="Drag to reorder"
         aria-label="Reorder handle"
@@ -94,10 +97,8 @@ export function ImageCard({
           <h4 className="text-sm font-semibold text-slate-900 truncate" title={image.title}>
             {image.title}
           </h4>
-          <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
-            <span>{formatBytes(image.size)}</span>
-            <span className="w-1 h-1 rounded-full bg-slate-300" aria-hidden="true" />
-            <span className="truncate">{image.mimetype.split("/")[1]?.toUpperCase() ?? "IMG"}</span>
+          <p className="text-xs text-slate-500 mt-1">
+            Added {new Date(image.createdAt).toLocaleDateString()}
           </p>
         </div>
 
@@ -122,3 +123,4 @@ export function ImageCard({
     </div>
   );
 }
+export default ImageCard;

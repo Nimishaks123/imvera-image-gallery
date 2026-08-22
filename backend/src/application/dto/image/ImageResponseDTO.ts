@@ -1,4 +1,4 @@
-export interface Image {
+export interface ImageResponseDTO {
   id: string;
   title: string;
   url: string;

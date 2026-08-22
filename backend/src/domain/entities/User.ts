@@ -4,6 +4,8 @@ export interface User {
   email: string;
   phone: string;
   password: string;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
