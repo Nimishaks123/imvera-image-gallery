@@ -1,20 +1,20 @@
 import type { Request, Response, NextFunction } from "express";
-import type { RegisterUserUseCase } from "../../../application/usecases/auth/RegisterUserUseCase.js";
-import type { LoginUserUseCase } from "../../../application/usecases/auth/LoginUserUseCase.js";
-import type { GetCurrentUserUseCase } from "../../../application/usecases/auth/GetCurrentUserUseCase.js";
-import type { ForgotPasswordUseCase } from "../../../application/usecases/auth/ForgotPasswordUseCase.js";
-import type { ResetPasswordUseCase } from "../../../application/usecases/auth/ResetPasswordUseCase.js";
+import type { IRegisterUserUseCase } from "../../../application/interfaces/IRegisterUserUseCase.js";
+import type { ILoginUserUseCase } from "../../../application/interfaces/ILoginUserUseCase.js";
+import type { IGetCurrentUserUseCase } from "../../../application/interfaces/IGetCurrentUserUseCase.js";
+import type { IForgotPasswordUseCase } from "../../../application/interfaces/IForgotPasswordUseCase.js";
+import type { IResetPasswordUseCase } from "../../../application/interfaces/IResetPasswordUseCase.js";
 import type { RegisterUserDTO } from "../../../application/dto/auth/RegisterUserDTO.js";
 import type { LoginUserDTO } from "../../../application/dto/auth/LoginUserDTO.js";
 import { StatusCodes } from "../../../common/constants/statusCodes.js";
 
 export class AuthController {
   constructor(
-    private readonly registerUserUseCase: RegisterUserUseCase,
-    private readonly loginUserUseCase: LoginUserUseCase,
-    private readonly getCurrentUserUseCase: GetCurrentUserUseCase,
-    private readonly forgotPasswordUseCase: ForgotPasswordUseCase,
-    private readonly resetPasswordUseCase: ResetPasswordUseCase,
+    private readonly registerUserUseCase: IRegisterUserUseCase,
+    private readonly loginUserUseCase: ILoginUserUseCase,
+    private readonly getCurrentUserUseCase: IGetCurrentUserUseCase,
+    private readonly forgotPasswordUseCase: IForgotPasswordUseCase,
+    private readonly resetPasswordUseCase: IResetPasswordUseCase,
   ) {}
 
   register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

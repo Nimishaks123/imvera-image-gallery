@@ -1,11 +1,12 @@
 import crypto from "crypto";
 import type { IImageRepository } from "../../../domain/repositories/IImageRepository.js";
 import type { IFileStorage, UploadedFile } from "../../interfaces/IFileStorage.js";
+import type { IUpdateImageUseCase } from "../../interfaces/IUpdateImageUseCase.js";
 import type { Image } from "../../../domain/entities/Image.js";
 import { AppError } from "../../../common/errors/AppError.js";
 import { StatusCodes } from "../../../common/constants/statusCodes.js";
 
-export class UpdateImageUseCase {
+export class UpdateImageUseCase implements IUpdateImageUseCase {
   constructor(
     private readonly imageRepository: IImageRepository,
     private readonly fileStorage: IFileStorage,

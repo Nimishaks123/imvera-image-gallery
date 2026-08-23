@@ -2,12 +2,13 @@ import type { IUserRepository } from "../../../domain/repositories/IUserReposito
 import type { IPasswordHasher } from "../../interfaces/IPasswordHasher.js";
 import type { ITokenService } from "../../interfaces/ITokenService.js";
 import type { LoginUserDTO, LoginUserResponseDTO } from "../../dto/auth/LoginUserDTO.js";
+import type { ILoginUserUseCase } from "../../interfaces/ILoginUserUseCase.js";
 import { UserMapper } from "../../mappers/UserMapper.js";
 import { AppError } from "../../../common/errors/AppError.js";
 import { Messages } from "../../../common/constants/messages.js";
 import { StatusCodes } from "../../../common/constants/statusCodes.js";
 
-export class LoginUserUseCase {
+export class LoginUserUseCase implements ILoginUserUseCase {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly passwordHasher: IPasswordHasher,

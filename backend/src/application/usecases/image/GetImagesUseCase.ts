@@ -1,8 +1,9 @@
 import type { IImageRepository } from "../../../domain/repositories/IImageRepository.js";
 import type { IFileStorage } from "../../interfaces/IFileStorage.js";
 import type { Image } from "../../../domain/entities/Image.js";
+import type { IGetImagesUseCase } from "../../interfaces/IGetImagesUseCase.js";
 
-export class GetImagesUseCase {
+export class GetImagesUseCase implements IGetImagesUseCase {
   constructor(
     private readonly imageRepository: IImageRepository,
     private readonly fileStorage: IFileStorage,

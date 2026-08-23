@@ -1,10 +1,11 @@
 import type { IImageRepository } from "../../../domain/repositories/IImageRepository.js";
 import type { IFileStorage } from "../../interfaces/IFileStorage.js";
 import type { Image } from "../../../domain/entities/Image.js";
+import type { IGetImageByIdUseCase } from "../../interfaces/IGetImageByIdUseCase.js";
 import { AppError } from "../../../common/errors/AppError.js";
 import { StatusCodes } from "../../../common/constants/statusCodes.js";
 
-export class GetImageByIdUseCase {
+export class GetImageByIdUseCase implements IGetImageByIdUseCase {
   constructor(
     private readonly imageRepository: IImageRepository,
     private readonly fileStorage: IFileStorage,

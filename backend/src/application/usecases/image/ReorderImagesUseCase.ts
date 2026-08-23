@@ -1,8 +1,9 @@
 import type { IImageRepository } from "../../../domain/repositories/IImageRepository.js";
+import type { IReorderImagesUseCase } from "../../interfaces/IReorderImagesUseCase.js";
 import { AppError } from "../../../common/errors/AppError.js";
 import { StatusCodes } from "../../../common/constants/statusCodes.js";
 
-export class ReorderImagesUseCase {
+export class ReorderImagesUseCase implements IReorderImagesUseCase {
   constructor(private readonly imageRepository: IImageRepository) {}
 
   async execute(userId: string, imageIds: string[]): Promise<void> {

@@ -1,12 +1,13 @@
 import type { IUserRepository } from "../../../domain/repositories/IUserRepository.js";
 import type { IPasswordHasher } from "../../interfaces/IPasswordHasher.js";
 import type { RegisterUserDTO, RegisterUserResponseDTO } from "../../dto/auth/RegisterUserDTO.js";
+import type { IRegisterUserUseCase } from "../../interfaces/IRegisterUserUseCase.js";
 import { UserMapper } from "../../mappers/UserMapper.js";
 import { AppError } from "../../../common/errors/AppError.js";
 import { Messages } from "../../../common/constants/messages.js";
 import { StatusCodes } from "../../../common/constants/statusCodes.js";
 
-export class RegisterUserUseCase {
+export class RegisterUserUseCase implements IRegisterUserUseCase {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly passwordHasher: IPasswordHasher,

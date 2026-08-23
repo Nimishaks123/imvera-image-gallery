@@ -1,22 +1,22 @@
 import type { Request, Response, NextFunction } from "express";
-import type { UploadImagesUseCase } from "../../../application/usecases/image/UploadImagesUseCase.js";
-import type { GetImagesUseCase } from "../../../application/usecases/image/GetImagesUseCase.js";
-import type { GetImageByIdUseCase } from "../../../application/usecases/image/GetImageByIdUseCase.js";
-import type { UpdateImageUseCase } from "../../../application/usecases/image/UpdateImageUseCase.js";
-import type { DeleteImageUseCase } from "../../../application/usecases/image/DeleteImageUseCase.js";
-import type { ReorderImagesUseCase } from "../../../application/usecases/image/ReorderImagesUseCase.js";
+import type { IUploadImagesUseCase } from "../../../application/interfaces/IUploadImagesUseCase.js";
+import type { IGetImagesUseCase } from "../../../application/interfaces/IGetImagesUseCase.js";
+import type { IGetImageByIdUseCase } from "../../../application/interfaces/IGetImageByIdUseCase.js";
+import type { IUpdateImageUseCase } from "../../../application/interfaces/IUpdateImageUseCase.js";
+import type { IDeleteImageUseCase } from "../../../application/interfaces/IDeleteImageUseCase.js";
+import type { IReorderImagesUseCase } from "../../../application/interfaces/IReorderImagesUseCase.js";
 import { ImageMapper } from "../../../application/mappers/ImageMapper.js";
 import { AppError } from "../../../common/errors/AppError.js";
 import { StatusCodes } from "../../../common/constants/statusCodes.js";
 
 export class ImageController {
   constructor(
-    private readonly uploadImagesUseCase: UploadImagesUseCase,
-    private readonly getImagesUseCase: GetImagesUseCase,
-    private readonly getImageByIdUseCase: GetImageByIdUseCase,
-    private readonly updateImageUseCase: UpdateImageUseCase,
-    private readonly deleteImageUseCase: DeleteImageUseCase,
-    private readonly reorderImagesUseCase: ReorderImagesUseCase,
+    private readonly uploadImagesUseCase: IUploadImagesUseCase,
+    private readonly getImagesUseCase: IGetImagesUseCase,
+    private readonly getImageByIdUseCase: IGetImageByIdUseCase,
+    private readonly updateImageUseCase: IUpdateImageUseCase,
+    private readonly deleteImageUseCase: IDeleteImageUseCase,
+    private readonly reorderImagesUseCase: IReorderImagesUseCase,
   ) {}
 
   uploadImages = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

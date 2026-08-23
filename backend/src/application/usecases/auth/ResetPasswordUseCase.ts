@@ -1,9 +1,10 @@
 import type { IUserRepository } from "../../../domain/repositories/IUserRepository.js";
 import type { IPasswordHasher } from "../../interfaces/IPasswordHasher.js";
+import type { IResetPasswordUseCase } from "../../interfaces/IResetPasswordUseCase.js";
 import { AppError } from "../../../common/errors/AppError.js";
 import { StatusCodes } from "../../../common/constants/statusCodes.js";
 
-export class ResetPasswordUseCase {
+export class ResetPasswordUseCase implements IResetPasswordUseCase {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly passwordHasher: IPasswordHasher,

@@ -1,9 +1,10 @@
 import type { IImageRepository } from "../../../domain/repositories/IImageRepository.js";
 import type { IFileStorage } from "../../interfaces/IFileStorage.js";
+import type { IDeleteImageUseCase } from "../../interfaces/IDeleteImageUseCase.js";
 import { AppError } from "../../../common/errors/AppError.js";
 import { StatusCodes } from "../../../common/constants/statusCodes.js";
 
-export class DeleteImageUseCase {
+export class DeleteImageUseCase implements IDeleteImageUseCase {
   constructor(
     private readonly imageRepository: IImageRepository,
     private readonly fileStorage: IFileStorage,
