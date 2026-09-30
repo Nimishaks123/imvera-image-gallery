@@ -25,7 +25,7 @@ export function RegisterPage() {
 
   useEffect(() => {
     clearError();
-  }, []);
+  }, [clearError]);
 
   async function onSubmit(data: RegisterFormValues) {
     const result = await dispatch(

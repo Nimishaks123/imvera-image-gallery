@@ -20,6 +20,9 @@ export function ResetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
+  const missingTokenError = !token
+  ? "Invalid reset request: Missing token in URL query."
+  : undefined;
 
   const {
     register,
@@ -31,10 +34,8 @@ export function ResetPasswordPage() {
 
   useEffect(() => {
     clearError();
-    if (!token) {
-      setApiError("Invalid reset request: Missing token in URL query.");
-    }
-  }, [token, clearError]);
+   
+  }, [clearError]);
 
   async function onSubmit(data: ResetPasswordFormValues) {
     if (!token) return;
@@ -68,11 +69,11 @@ export function ResetPasswordPage() {
 
   return (
     <AuthLayout
-      heading="Set new password"
-      subheading="Please enter your new password below"
-      successMessage={successMessage ?? undefined}
-      apiError={apiError ?? undefined}
-    >
+  heading="Set new password"
+  subheading="Please enter your new password below"
+  successMessage={successMessage ?? undefined}
+  apiError={apiError ?? missingTokenError}
+>
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
         <FormField
           id="reset-password"
