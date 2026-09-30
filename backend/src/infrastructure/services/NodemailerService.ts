@@ -1,3 +1,4 @@
+import type { ILogger } from "../../application/interfaces/ILogger.js";
 import nodemailer from "nodemailer";
 import type { IMailer } from "../../application/interfaces/IMailer.js";
 import { env } from "../../common/config/env.js";
@@ -5,7 +6,7 @@ import { env } from "../../common/config/env.js";
 export class NodemailerService implements IMailer {
   private readonly transporter: nodemailer.Transporter | null = null;
 
-  constructor() {
+  constructor(private readonly logger: ILogger) {
     const { host, port, user, password } = env.smtp;
     if (host && user && password) {
       this.transporter = nodemailer.createTransport({
@@ -22,37 +23,43 @@ export class NodemailerService implements IMailer {
     const text = `You are receiving this email because you requested a password reset. Please click on the following link, or paste this into your browser to complete the process:\n\n${resetUrl}\n\nIf you did not request this, please ignore this email.`;
 
     const { host, port, user } = env.smtp;
-    console.log(`[MAILER_DIAGNOSTIC] Attempting password reset email.`);
-    console.log(`[MAILER_DIAGNOSTIC] SMTP Host: ${host}`);
-    console.log(`[MAILER_DIAGNOSTIC] SMTP Port: ${port}`);
-    console.log(`[MAILER_DIAGNOSTIC] SMTP User Configured: ${!!user}`);
-    console.log(`[MAILER_DIAGNOSTIC] Transporter Created: ${!!this.transporter}`);
+   this.logger.debug("Attempting password reset email", {
+      smtpHost: host,
+      smtpPort: port,
+      smtpUserConfigured: !!user,
+      transporterCreated: !!this.transporter,
+    });
 
     if (!this.transporter) {
-      console.warn("[MAILER_DIAGNOSTIC] Transporter not created due to missing SMTP configuration.");
+     this.logger.warn(
+        "Password reset email could not be sent because SMTP is not configured",
+      );
       return;
     }
 
     try {
-      console.log("[MAILER_DIAGNOSTIC] Verifying connection configuration...");
+       this.logger.debug("Verifying SMTP connection");
+
       await this.transporter.verify();
-      console.log("[MAILER_DIAGNOSTIC] Transporter verification: SUCCESS");
-    } catch (verifyErr: any) {
-      console.error("[MAILER_DIAGNOSTIC] Transporter verification: FAILED", verifyErr.message || verifyErr);
+       this.logger.info("SMTP connection verified successfully");
+    } catch (verifyErr: unknown) {
+      this.logger.error("SMTP connection verification failed", verifyErr);
       throw verifyErr;
     }
 
     try {
-      console.log("[MAILER_DIAGNOSTIC] Sending email via Nodemailer...");
+      this.logger.debug("Sending password reset email");
       const info = await this.transporter.sendMail({
         from: env.smtp.from ? `"Imvera Support" <${env.smtp.from}>` : `"Imvera Support" <${env.smtp.user}>`,
         to,
         subject: "Imvera — Password Reset Request",
         text,
       });
-      console.log("[MAILER_DIAGNOSTIC] sendMail: SUCCESS", { messageId: info.messageId });
-    } catch (sendErr: any) {
-      console.error("[MAILER_DIAGNOSTIC] sendMail: FAILED", sendErr.message || sendErr);
+       this.logger.info("Password reset email sent successfully", {
+        messageId: info.messageId,
+      });
+    } catch (sendErr: unknown) {
+     this.logger.error("Failed to send password reset email", sendErr);
       throw sendErr;
     }
   }

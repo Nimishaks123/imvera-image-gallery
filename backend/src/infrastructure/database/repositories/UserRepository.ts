@@ -1,11 +1,19 @@
-import type { IUserRepository } from "../../../domain/repositories/IUserRepository.js";
+import type { IUserRepository, CreateUserData } from "../../../domain/repositories/IUserRepository.js";
 import type { User } from "../../../domain/entities/User.js";
-import { UserModel, type UserDocument } from "../models/UserModel.js";
+import { UserModel, type UserDocument, type IUserFields } from "../models/UserModel.js";
 import { AppError } from "../../../common/errors/AppError.js";
 import { StatusCodes } from "../../../common/constants/statusCodes.js";
+import { BaseRepository } from "./BaseRepository.js";
 
-export class UserRepository implements IUserRepository {
-  private toEntity(doc: UserDocument): User {
+export class UserRepository
+  extends BaseRepository<User, UserDocument, CreateUserData, IUserFields>
+  implements IUserRepository
+{
+  constructor() {
+    super(UserModel);
+  }
+
+  protected toEntity(doc: UserDocument): User {
     return {
       id: doc._id.toHexString(),
       name: doc.name,
@@ -29,15 +37,9 @@ export class UserRepository implements IUserRepository {
     return doc ? this.toEntity(doc as UserDocument) : null;
   }
 
-  async findById(id: string): Promise<User | null> {
-    const doc = await UserModel.findById(id).exec();
-    return doc ? this.toEntity(doc as UserDocument) : null;
-  }
-
-  async create(data: Omit<User, "id" | "createdAt" | "updatedAt" | "passwordResetToken" | "passwordResetExpires">): Promise<User> {
+  override async create(data: CreateUserData): Promise<User> {
     try {
-      const doc = await UserModel.create(data);
-      return this.toEntity(doc as UserDocument);
+      return await super.create(data);
     } catch (err) {
       if (
         err !== null &&
@@ -51,7 +53,7 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  async update(user: User): Promise<User> {
+  override async update(user: User): Promise<User> {
     const doc = await UserModel.findByIdAndUpdate(
       user.id,
       {

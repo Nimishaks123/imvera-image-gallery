@@ -1,3 +1,4 @@
+import { WinstonLogger } from "../infrastructure/logger/WinstonLogger.js";
 import type { Router } from "express";
 import { env } from "../common/config/env.js";
 import { UserRepository } from "../infrastructure/database/repositories/UserRepository.js";
@@ -31,6 +32,7 @@ export interface AppDependencies {
 }
 
 export function buildDependencies(): AppDependencies {
+  const logger = new WinstonLogger();
   const userRepository = new UserRepository();
   const imageRepository = new ImageRepository();
   const passwordHasher = new BcryptPasswordHasher();
@@ -41,7 +43,7 @@ export function buildDependencies(): AppDependencies {
     secretAccessKey: env.aws.secretAccessKey,
     bucket: env.aws.s3Bucket,
   });
-  const mailer = new NodemailerService();
+  const mailer = new NodemailerService(logger);
 
   const registerUserUseCase = new RegisterUserUseCase(userRepository, passwordHasher);
   const loginUserUseCase = new LoginUserUseCase(userRepository, passwordHasher, tokenService);
@@ -49,10 +51,10 @@ export function buildDependencies(): AppDependencies {
   const forgotPasswordUseCase = new ForgotPasswordUseCase(userRepository, mailer);
   const resetPasswordUseCase = new ResetPasswordUseCase(userRepository, passwordHasher);
 
-  const uploadImagesUseCase = new UploadImagesUseCase(imageRepository, fileStorage);
+  const uploadImagesUseCase = new UploadImagesUseCase(imageRepository, fileStorage,logger);
   const getImagesUseCase = new GetImagesUseCase(imageRepository, fileStorage);
   const getImageByIdUseCase = new GetImageByIdUseCase(imageRepository, fileStorage);
-  const updateImageUseCase = new UpdateImageUseCase(imageRepository, fileStorage);
+  const updateImageUseCase = new UpdateImageUseCase(imageRepository, fileStorage,logger);
   const deleteImageUseCase = new DeleteImageUseCase(imageRepository, fileStorage);
   const reorderImagesUseCase = new ReorderImagesUseCase(imageRepository);
 

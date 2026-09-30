@@ -1,3 +1,4 @@
+import type { ILogger } from "../../interfaces/ILogger.js";
 import crypto from "crypto";
 import type { IImageRepository } from "../../../domain/repositories/IImageRepository.js";
 import type { IFileStorage, UploadedFile } from "../../interfaces/IFileStorage.js";
@@ -10,6 +11,7 @@ export class UpdateImageUseCase implements IUpdateImageUseCase {
   constructor(
     private readonly imageRepository: IImageRepository,
     private readonly fileStorage: IFileStorage,
+    private readonly logger: ILogger,
   ) {}
 
   async execute(
@@ -45,7 +47,7 @@ export class UpdateImageUseCase implements IUpdateImageUseCase {
         await this.fileStorage.upload(file, newKey);
         oldKey = image.key;
         image.key = newKey;
-      } catch (err) {
+      } catch  {
         throw new AppError("Failed to upload new image file to S3", StatusCodes.INTERNAL_SERVER_ERROR);
       }
     }
@@ -56,19 +58,25 @@ export class UpdateImageUseCase implements IUpdateImageUseCase {
       if (oldKey) {
         try {
           await this.fileStorage.delete(oldKey);
-        } catch (err) {
-          console.warn(`[WARN] Failed to delete old S3 object: ${oldKey}`, err);
+        } catch (err:unknown) {
+       this.logger.warn("Failed to delete old S3 object", {
+  oldKey,
+  error: err,
+});
         }
       }
 
       updatedImage.url = await this.fileStorage.getPresignedUrl(updatedImage.key, 3600);
       return updatedImage;
-    } catch (err) {
+    } catch (err:unknown) {
       if (file && image.key !== oldKey && oldKey !== null) {
         try {
           await this.fileStorage.delete(image.key);
-        } catch (s3Err) {
-          console.warn(`[WARN] Cleanup failed for newly uploaded S3 object: ${image.key}`, s3Err);
+        } catch (s3Err:unknown) {
+         this.logger.warn("Cleanup failed for newly uploaded S3 object", {
+  key: image.key,
+  error: s3Err,
+});
         }
       }
       throw err;

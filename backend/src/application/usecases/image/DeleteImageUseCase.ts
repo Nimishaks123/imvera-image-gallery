@@ -21,7 +21,7 @@ export class DeleteImageUseCase implements IDeleteImageUseCase {
 
     try {
       await this.fileStorage.delete(image.key);
-    } catch (err) {
+    } catch  {
       throw new AppError("Failed to delete image from S3 storage", StatusCodes.INTERNAL_SERVER_ERROR);
     }
 

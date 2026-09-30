@@ -1,10 +1,18 @@
 import type { IImageRepository } from "../../../domain/repositories/IImageRepository.js";
 import type { Image } from "../../../domain/entities/Image.js";
-import { ImageModel, type ImageDocument } from "../models/ImageModel.js";
+import { ImageModel, type ImageDocument, type IImageFields } from "../models/ImageModel.js";
 import mongoose from "mongoose";
+import { BaseRepository } from "./BaseRepository.js";
 
-export class ImageRepository implements IImageRepository {
-  private toEntity(doc: ImageDocument): Image {
+export class ImageRepository
+  extends BaseRepository<Image, ImageDocument, Omit<Image, "id" | "createdAt" | "updatedAt">, IImageFields>
+  implements IImageRepository
+{
+  constructor() {
+    super(ImageModel);
+  }
+
+  protected toEntity(doc: ImageDocument): Image {
     return {
       id: doc._id.toHexString(),
       userId: doc.userId.toHexString(),
@@ -16,12 +24,6 @@ export class ImageRepository implements IImageRepository {
     };
   }
 
-  async findById(id: string): Promise<Image | null> {
-    if (!mongoose.Types.ObjectId.isValid(id)) return null;
-    const doc = await ImageModel.findById(id).exec();
-    return doc ? this.toEntity(doc as ImageDocument) : null;
-  }
-
   async findAllByUserId(userId: string): Promise<Image[]> {
     if (!mongoose.Types.ObjectId.isValid(userId)) return [];
     const docs = await ImageModel.find({ userId })
@@ -30,7 +32,7 @@ export class ImageRepository implements IImageRepository {
     return docs.map((doc) => this.toEntity(doc as ImageDocument));
   }
 
-  async create(data: Omit<Image, "id" | "createdAt" | "updatedAt">): Promise<Image> {
+  override async create(data: Omit<Image, "id" | "createdAt" | "updatedAt">): Promise<Image> {
     const doc = await ImageModel.create({
       ...data,
       userId: new mongoose.Types.ObjectId(data.userId),
@@ -38,7 +40,7 @@ export class ImageRepository implements IImageRepository {
     return this.toEntity(doc as ImageDocument);
   }
 
-  async update(image: Image): Promise<Image> {
+  override async update(image: Image): Promise<Image> {
     const doc = await ImageModel.findByIdAndUpdate(
       image.id,
       {
@@ -52,10 +54,6 @@ export class ImageRepository implements IImageRepository {
       throw new Error("Image not found");
     }
     return this.toEntity(doc as ImageDocument);
-  }
-
-  async delete(id: string): Promise<void> {
-    await ImageModel.findByIdAndDelete(id).exec();
   }
 
   async bulkUpdateOrder(items: { id: string; order: number }[]): Promise<void> {

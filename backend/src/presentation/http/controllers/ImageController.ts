@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response } from "express";
 import type { IUploadImagesUseCase } from "../../../application/interfaces/IUploadImagesUseCase.js";
 import type { IGetImagesUseCase } from "../../../application/interfaces/IGetImagesUseCase.js";
 import type { IGetImageByIdUseCase } from "../../../application/interfaces/IGetImageByIdUseCase.js";
@@ -8,6 +8,8 @@ import type { IReorderImagesUseCase } from "../../../application/interfaces/IReo
 import { ImageMapper } from "../../../application/mappers/ImageMapper.js";
 import { AppError } from "../../../common/errors/AppError.js";
 import { StatusCodes } from "../../../common/constants/statusCodes.js";
+import { catchAsync } from "../../../common/utils/catchAsync.js";
+import { successResponse, messageResponse } from "../../../common/utils/apiResponse.js";
 
 export class ImageController {
   constructor(
@@ -19,111 +21,89 @@ export class ImageController {
     private readonly reorderImagesUseCase: IReorderImagesUseCase,
   ) {}
 
-  uploadImages = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const files = req.files as Express.Multer.File[] | undefined;
-      if (!files || files.length === 0) {
-        throw new AppError("No files uploaded", StatusCodes.BAD_REQUEST);
-      }
+  uploadImages = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    const files = req.files as Express.Multer.File[] | undefined;
+    if (!files || files.length === 0) {
+      throw new AppError("No files uploaded", StatusCodes.BAD_REQUEST);
+    }
 
-      let titles: string[] = [];
-      const rawTitles = req.body.titles;
-      if (rawTitles) {
-        if (Array.isArray(rawTitles)) {
-          titles = rawTitles.map(String);
-        } else if (typeof rawTitles === "string") {
-          try {
-            const parsed = JSON.parse(rawTitles);
-            titles = Array.isArray(parsed) ? parsed.map(String) : [String(parsed)];
-          } catch {
-            titles = [rawTitles];
-          }
+    let titles: string[] = [];
+    const rawTitles = req.body.titles;
+    if (rawTitles) {
+      if (Array.isArray(rawTitles)) {
+        titles = rawTitles.map(String);
+      } else if (typeof rawTitles === "string") {
+        try {
+          const parsed = JSON.parse(rawTitles);
+          titles = Array.isArray(parsed) ? parsed.map(String) : [String(parsed)];
+        } catch {
+          titles = [rawTitles];
         }
       }
-
-      const uploadedFiles = files.map((file) => ({
-        buffer: file.buffer,
-        mimetype: file.mimetype,
-        originalname: file.originalname,
-        size: file.size,
-      }));
-
-      const images = await this.uploadImagesUseCase.execute(
-        req.user!.id,
-        uploadedFiles,
-        titles,
-      );
-
-      const data = images.map(ImageMapper.toResponseDTO);
-      res.status(StatusCodes.CREATED).json({ success: true, data });
-    } catch (err) {
-      next(err);
     }
-  };
 
-  getImages = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const images = await this.getImagesUseCase.execute(req.user!.id);
-      const data = images.map(ImageMapper.toResponseDTO);
-      res.status(StatusCodes.OK).json({ success: true, data });
-    } catch (err) {
-      next(err);
+    const uploadedFiles = files.map((file) => ({
+      buffer: file.buffer,
+      mimetype: file.mimetype,
+      originalname: file.originalname,
+      size: file.size,
+    }));
+
+    const images = await this.uploadImagesUseCase.execute(
+      req.user!.id,
+      uploadedFiles,
+      titles,
+    );
+
+    const data = images.map(ImageMapper.toResponseDTO);
+    res.status(StatusCodes.CREATED).json(successResponse(data));
+  });
+
+  getImages = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    const images = await this.getImagesUseCase.execute(req.user!.id);
+    const data = images.map(ImageMapper.toResponseDTO);
+    res.status(StatusCodes.OK).json(successResponse(data));
+  });
+
+  getImageById = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    const image = await this.getImageByIdUseCase.execute(req.params.id, req.user!.id);
+    res.status(StatusCodes.OK).json(successResponse(ImageMapper.toResponseDTO(image)));
+  });
+
+  updateImage = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    const file = req.file
+      ? {
+          buffer: req.file.buffer,
+          mimetype: req.file.mimetype,
+          originalname: req.file.originalname,
+          size: req.file.size,
+        }
+      : undefined;
+
+    const image = await this.updateImageUseCase.execute(
+      req.params.id,
+      req.user!.id,
+      req.body.title,
+      file,
+    );
+
+    res.status(StatusCodes.OK).json(successResponse(ImageMapper.toResponseDTO(image)));
+  });
+
+  deleteImage = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    await this.deleteImageUseCase.execute(req.params.id, req.user!.id);
+    res.status(StatusCodes.OK).json(messageResponse("Image deleted successfully"));
+  });
+
+  reorderImages = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    const { imageIds } = req.body;
+    if (!Array.isArray(imageIds)) {
+      throw new AppError("imageIds must be an array of strings", StatusCodes.BAD_REQUEST);
     }
-  };
 
-  getImageById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const image = await this.getImageByIdUseCase.execute(req.params.id, req.user!.id);
-      res.status(StatusCodes.OK).json({ success: true, data: ImageMapper.toResponseDTO(image) });
-    } catch (err) {
-      next(err);
-    }
-  };
-
-  updateImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const file = req.file
-        ? {
-            buffer: req.file.buffer,
-            mimetype: req.file.mimetype,
-            originalname: req.file.originalname,
-            size: req.file.size,
-          }
-        : undefined;
-
-      const image = await this.updateImageUseCase.execute(
-        req.params.id,
-        req.user!.id,
-        req.body.title,
-        file,
-      );
-
-      res.status(StatusCodes.OK).json({ success: true, data: ImageMapper.toResponseDTO(image) });
-    } catch (err) {
-      next(err);
-    }
-  };
-
-  deleteImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      await this.deleteImageUseCase.execute(req.params.id, req.user!.id);
-      res.status(StatusCodes.OK).json({ success: true, message: "Image deleted successfully" });
-    } catch (err) {
-      next(err);
-    }
-  };
-
-  reorderImages = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const { imageIds } = req.body;
-      if (!Array.isArray(imageIds)) {
-        throw new AppError("imageIds must be an array of strings", StatusCodes.BAD_REQUEST);
-      }
-
-      await this.reorderImagesUseCase.execute(req.user!.id, imageIds.map(String));
-      res.status(StatusCodes.OK).json({ success: true, message: "Images reordered successfully" });
-    } catch (err) {
-      next(err);
-    }
-  };
+    await this.reorderImagesUseCase.execute(req.user!.id, imageIds.map(String));
+    res.status(StatusCodes.OK).json(messageResponse("Images reordered successfully"));
+  });
 }
+
+

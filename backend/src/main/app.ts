@@ -9,6 +9,7 @@ import type { Router } from "express";
 import { env } from "../common/config/env.js";
 import { AppError } from "../common/errors/AppError.js";
 import { StatusCodes } from "../common/constants/statusCodes.js";
+import { successResponse, errorResponse } from "../common/utils/apiResponse.js";
 
 interface AppRouters {
   authRouter: Router;
@@ -22,7 +23,7 @@ export function createApp({ authRouter, imageRouter }: AppRouters): Express {
   app.use(express.json());
 
   app.get("/health", (_req: Request, res: Response) => {
-    res.json({ status: "ok" });
+    res.json(successResponse({ status: "ok" }));
   });
 
   app.use("/api/auth", authRouter);
@@ -34,12 +35,13 @@ export function createApp({ authRouter, imageRouter }: AppRouters): Express {
 
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     if (err instanceof AppError) {
-      res.status(err.statusCode).json({ success: false, message: err.message });
+      res.status(err.statusCode).json(errorResponse(err.message));
       return;
     }
     console.error(err);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal server error" });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse("Internal server error"));
   });
 
   return app;
 }
+
